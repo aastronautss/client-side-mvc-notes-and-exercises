@@ -1,12 +1,66 @@
-var collection = [],
-    templates = {};
-
-var Item = Backbone.Model.extend();
-
-items_json.forEach(function(item) {
-  item.id = collection.length + 1;
-  collection.push(new Item(item));
+var templates = {};
+var Item = Backbone.Model.extend({
+  idAttribute: 'id'
 });
+var Items = {
+  collection: [],
+  $body: $('tbody'),
+
+  create: function(item_data) {
+    var item = new Item(item_data);
+
+    this.setID.call(this, item);
+    this.collection.push(item);
+
+    return item;
+  },
+
+  remove: function(e) {
+    e.preventDefault();
+    var $target = $(e.currentTarget),
+        id = +$target.data('id'),
+        model = _(this.collection).findWhere({ id: id });
+
+    this.collection = _(this.collection).without(model);
+    this.render();
+  },
+
+  empty: function() {
+    this.collection = [];
+    this.$body.empty();
+  },
+
+  sortBy: function(prop) {
+    this.collection = _(this.collection).sortBy(function(model) {
+      return model.attributes[prop];
+    });
+    this.render();
+  },
+
+  render: function() {
+    Items.$body.html(templates.items({
+      items: this.collection
+    }));
+  },
+
+  setID: function(model) {
+    model.set('id', this.collection.length + 1);
+  },
+
+  seedCollection: function() {
+    items_json.forEach(this.create.bind(this));
+  },
+
+  bind: function() {
+    this.$body.on('click', 'a', this.remove.bind(this));
+  },
+
+  init: function() {
+    this.seedCollection();
+    this.render();
+    this.bind();
+  }
+};
 
 $('[type="text/x-handlebars"]').each(function() {
   var $template = $(this);
@@ -14,10 +68,6 @@ $('[type="text/x-handlebars"]').each(function() {
 });
 
 Handlebars.registerPartial('item', $('#item').html());
-
-function render() {
-  $('tbody').html(templates.items({ items: collection }));
-}
 
 function getFormObject($f) {
   var data = $f.serializeArray(),
@@ -32,26 +82,27 @@ function getFormObject($f) {
 
 $('form').on('submit', function(e) {
   e.preventDefault();
-  var new_item = new Item(getFormObject($(e.target)));
-
-  new_item.set('id', collection.length + 1);
-
-  collection.push(new_item);
-  $('tbody').append(templates.item(new_item.toJSON()));
+  var attrs = getFormObject($(e.target)),
+      model = Items.create(attrs);
+  $('tbody').append(templates.item(model.toJSON()));
 
   e.target.reset();
 });
 
 $('thead').on('click', 'th', function(e) {
   e.preventDefault();
-  var $th = $(e.target),
-      iteratee = $th.data('prop');
-
-  collection = _.sortBy(collection, function(model) {
-    return model.get(iteratee);
-  });
-  render();
+  var prop = $(e.currentTarget).data('prop');
+  Items.sortBy(prop);
 });
+
+$('main > p > a').on('click', function(e) {
+  e.preventDefault();
+  Items.empty();
+});
+
+Items.init();
+
+/*
 
 $('tbody').on('click', 'a', function(e) {
   e.preventDefault();
@@ -63,12 +114,4 @@ $('tbody').on('click', 'a', function(e) {
 
   collection = _.without(collection, model);
   render();
-});
-
-$('main > p > a').on('click', function(e) {
-  e.preventDefault();
-  collection = [];
-  $('tbody').empty();
-});
-
-render();
+}); */
