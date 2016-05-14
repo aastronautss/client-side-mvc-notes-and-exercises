@@ -1,21 +1,7 @@
 var App = {
-  $body: $('tbody'),
-  template: Handlebars.compile($('#items').html()),
-
-  removeItem: function(e) {
-    e.preventDefault();
-    var id = $(e.currentTarget).data('id');
-    this.grocery_list.remove(id);
-  },
-
-  bind: function() {
-    this.$body.on('click', 'a', this.removeItem.bind(this));
-  },
-
   init: function() {
     this.grocery_list = new Items(items_json);
-    this.grocery_list.render();
-    this.bind();
+    this.grocery_list_view = new ItemsView({ collection: this.grocery_list });
   }
 }
 
@@ -41,12 +27,28 @@ var Items = Backbone.Collection.extend({
     return ++this.last_id;
   },
 
-  render: function() {
-    App.$body.html(App.template({ items: this.models }));
-  },
-
   initialize: function() {
     this.on('change reset add remove sort', this.render, this);
+  }
+});
+var ItemsView = Backbone.View.extend({
+  el: $('tbody').get(0),
+  template: Handlebars.compile($('#items').html()),
+
+  events: {
+    'click a': 'removeItem'
+  },
+
+  removeItem: function(e) {
+    e.preventDefault();
+    var id = +$(e.currentTarget).data('id');
+    this.collection.remove(id);
+  },
+  render: function() {
+    this.$el.html(this.template({ items: this.collection.models }));
+  },
+  initialize: function() {
+    this.listenTo(this.collection, 'change reset add remove sort', this.render);
     this.render();
   }
 });
