@@ -1,20 +1,1 @@
-$(function() {
-  function generateMap(position) {
-    var coords = position.coords,
-        latitude = coords.latitude,
-        longitude = coords.longitude,
-        url = 'https://maps.googleapis.com/maps/api/staticmap';
-
-    var params = '?center=' + latitude + ',' + longitude;
-    params += '&markers=color:red%7C' + latitude + ',' + longitude;
-    params += '&size=500x500';
-    params += '&zoom=15'
-    params += '&key=AIzaSyDceFjLV2djHlnfTb115_0xtP3q_H5A3Qc';
-
-    $('body').html($('<img />', {
-      src: url + params
-    }));
-  }
-
-  navigator.geolocation.getCurrentPosition(generateMap);
-});
+$(function() {  var map = {    width: 500,    height: 500,    buildURL: function() {      var url = 'https://maps.googleapis.com/maps/api/staticmap?zoom=14&size=';      url += this.width + 'x' + this.height;      url += '&center=' + this.coords.latitude + ',' + this.coords.longitude;      url += '&markers=' + this.coords.latitude + ',' + this.coords.longitude;      return url;    },    buildImage: function() {      var $img = $('<img />', {        width: this.width,        height: this.height,        src: this.buildURL()      });      $('#map').html($img);    },    latLng: function() {      return 'lat=' + this.coords.latitude + '&lon=' + this.coords.longitude;    },    build: function(position) {      this.coords = position.coords;      this.buildImage();      weather.get();    }  }  var weather = {    endpoint: 'http://api.openweathermap.org/data/2.5/weather',    template: Handlebars.compile($('#weather_card').html()),    $el: $('#weather'),    url: function() {      return this.endpoint + '?' + map.latLng() + '&APPID=c65e46a975e1aaefac85f80314ea3d9e';    },    get: function() {      var dfd = $.ajax({        url: this.url(),        dataType: 'json'      });      dfd.done(this.render.bind(this));    },    temp: function(kelvin) {      return kelvinToF(kelvin).toFixed(1) + '&deg;F';    },    processData: function(json) {      return {        name: json.name,        temp: this.temp(json.main.temp),        description: json.weather[0].description,        icon: json.cod,      };    },    render: function(json) {      this.$el.html(this.template(this.processData(json))).addClass('slide');    }  }  function kelvinToF(temp) {    return 9 / 5 * (temp - 273.15) + 32;  }  navigator.geolocation.getCurrentPosition(map.build.bind(map));});

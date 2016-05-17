@@ -5,9 +5,23 @@
     <meta charset="UTF-8" />
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
     <script src="script.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
+    <main>
+      <article>
+        <div id="map"><p>Finding Geolocation...</p></div>
+        <div id="weather"></div>
+      </article>
+    </main>
 
+    <script type="text/x-handlebars" id="weather_card">
+      <h2>{{name}}</h2>
+      <h3>{{{temp}}}</h3>
+      <p><i class="owf owf-{{icon}}"></i> {{description}}</p>
+    </script>
   </body>
 </html>
