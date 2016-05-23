@@ -1,0 +1,43 @@
+body {
+  background: #555;
+  font: normal 16px Georgia, serif;
+}
+
+body > header,
+main {
+  background: #fff;
+  width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+main {
+  margin: 25px auto 0 auto;
+}
+
+h1,
+h2 {
+  font: bold 24px Helvetica, Arial, sans-serif;
+}
+
+h1,
+nav {
+  display: inline-block;
+}
+
+nav li {
+  display: inline-block;
+}
+
+nav li .active {
+  color: #faa;
+}
+
+nav li + li {
+  margin-left: 15px;
+}
+
+article + article {
+  display: none;
+}
