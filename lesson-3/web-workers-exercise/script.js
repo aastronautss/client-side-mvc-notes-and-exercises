@@ -1,31 +1,22 @@
-function largestProduct(digit_string, number) {
-  var digits = parseDigits(digit_string),
-      largest = 0;
-
-  digits.forEach(function(digit, idx) {
-    var product = prod(digits.slice(idx, idx + number));
-    largest = product > largest ? product : largest;
-  });
-
-  return largest;
-}
-
-function prod(numbers) {
-  return numbers.reduce(function(prev, current) {
-    return +prev * +current;
-  });
-}
-
-function parseDigits(digit_string) {
-  return digit_string.replace(/\D/g, '').split('');
-}
+var worker = new Worker('/worker.js');
 
 $(function() {
-  $('form').on('submit', function(e) {
-    e.preventDefault();
-    var digit_string = $('textarea').val(),
-        number = +$('[type=number]').val();
+  var $form = $('form');
 
-    $('#answer span').text(largestProduct(digit_string, number));
+  function displayAnswer(answer) {
+    $('#answer span').text(answer);
+  }
+
+  $form.on('submit', function(e) {
+    e.preventDefault();
+    var data = {};
+    data.digit_string = $('textarea').val(),
+    data.number = +$('[type=number]').val();
+
+    worker.postMessage(data);
   });
+
+  worker.addEventListener('message', function(e) {
+    displayAnswer(e.data);
+  }, false);
 });
